@@ -41,7 +41,7 @@ const categorizeItemWithLLM = async (itemName: string): Promise<string> => {
 Item to categorize: "${itemName}"
 
 Available categories (choose ONE that best fits):
-- Produce (fresh fruits, vegetables, herbs)
+- Produce (fresh fruits, vegetables, herbs, onions)
 - Bakery (bread, pastries, baked goods)
 - Dairy & Eggs (milk, cheese, yogurt, eggs, butter)
 - Meat & Seafood (fresh/raw meat, fish, poultry)
