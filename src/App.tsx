@@ -8,6 +8,9 @@ import { Checkbox } from "@/components/ui/checkbox"
 import { Plus, Check, ShoppingCart, Package } from "@phosphor-icons/react"
 import deleteIcon from "./assets/delete.png"
 import downIcon from "./assets/down.png"
+import cannedFoodIcon from "./assets/canned-food.png"
+import freshProduceIcon from "./assets/fresh-produce.png"
+import personalHygieneIcon from "./assets/personal-hygiene.png"
 
 interface GroceryItem {
   id: string
@@ -33,6 +36,20 @@ const GROCERY_CATEGORIES = [
   'Household & Cleaning',
   'Other'
 ]
+
+// Get appropriate icon for each category
+const getCategoryIcon = (category: string) => {
+  switch (category) {
+    case 'Produce':
+      return <img src={freshProduceIcon} alt="Produce" className="w-4 h-4" />
+    case 'Canned Goods':
+      return <img src={cannedFoodIcon} alt="Canned Goods" className="w-4 h-4" />
+    case 'Personal Care':
+      return <img src={personalHygieneIcon} alt="Personal Care" className="w-4 h-4" />
+    default:
+      return <Package className="text-primary" size={16} />
+  }
+}
 
 const categorizeItemWithLLM = async (itemName: string): Promise<string> => {
   try {
@@ -324,7 +341,7 @@ function App() {
               {sortedCategories.map((category) => (
                 <div key={category} className="space-y-2">
                   <div className="flex items-center gap-2 mt-4 first:mt-0">
-                    <Package className="text-primary" size={16} />
+                    {getCategoryIcon(category)}
                     <h3 className="font-medium text-sm text-primary uppercase tracking-wide">
                       {category}
                     </h3>
