@@ -5,7 +5,8 @@ import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Plus, Check, Trash2, ChevronDown, ChevronRight, ShoppingCart, Package } from "@phosphor-icons/react"
+import { Plus, Check, ChevronDown, ChevronRight, ShoppingCart, Package } from "@phosphor-icons/react"
+import deleteIcon from "./assets/delete.png"
 
 interface GroceryItem {
   id: string
@@ -249,7 +250,7 @@ function App() {
                           onClick={() => removeItem(item.id)}
                           className="text-muted-foreground hover:text-destructive p-1"
                         >
-                          <Trash2 size={16} />
+                          <img src={deleteIcon} alt="Delete" className="w-4 h-4" />
                         </Button>
                       </div>
                     ))}
@@ -278,7 +279,7 @@ function App() {
                         onClick={clearCompletedItems}
                         className="text-muted-foreground hover:text-foreground flex items-center gap-1"
                       >
-                        <Trash2 size={14} />
+                        <img src={deleteIcon} alt="Delete" className="w-3.5 h-3.5" />
                         Clear completed
                       </Button>
                     </div>
