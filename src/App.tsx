@@ -17,26 +17,99 @@ interface GroceryItem {
   category: string
 }
 
-// Grocery item categories with common items
-const CATEGORIES = {
-  'Produce': ['apple', 'banana', 'orange', 'lemon', 'lime', 'grape', 'strawberry', 'blueberry', 'raspberry', 'blackberry', 'peach', 'pear', 'plum', 'cherry', 'mango', 'pineapple', 'watermelon', 'cantaloupe', 'honeydew', 'avocado', 'tomato', 'cucumber', 'lettuce', 'spinach', 'kale', 'arugula', 'cabbage', 'broccoli', 'cauliflower', 'carrot', 'celery', 'onion', 'garlic', 'potato', 'sweet potato', 'bell pepper', 'jalapeño', 'mushroom', 'zucchini', 'squash', 'eggplant', 'asparagus', 'green bean', 'pea', 'corn', 'radish', 'turnip', 'beet', 'parsnip', 'leek', 'scallion', 'chive', 'herb', 'basil', 'cilantro', 'parsley', 'mint', 'rosemary', 'thyme'],
-  'Dairy & Eggs': ['milk', 'cheese', 'butter', 'yogurt', 'egg', 'cream', 'sour cream', 'cottage cheese', 'cream cheese', 'mozzarella', 'cheddar', 'parmesan', 'swiss', 'feta', 'goat cheese', 'ricotta', 'brie', 'camembert', 'blue cheese', 'half and half', 'heavy cream', 'whipped cream', 'condensed milk', 'evaporated milk', 'almond milk', 'soy milk', 'oat milk', 'coconut milk'],
-  'Meat & Seafood': ['chicken', 'beef', 'pork', 'turkey', 'lamb', 'fish', 'salmon', 'tuna', 'cod', 'tilapia', 'shrimp', 'crab', 'lobster', 'scallop', 'mussel', 'clam', 'oyster', 'ground beef', 'ground turkey', 'ground chicken', 'steak', 'roast', 'chop', 'bacon', 'sausage', 'ham', 'deli meat', 'hot dog', 'bratwurst'],
-  'Pantry & Dry Goods': ['rice', 'pasta', 'bread', 'flour', 'sugar', 'salt', 'pepper', 'oil', 'vinegar', 'cereal', 'oats', 'quinoa', 'lentil', 'bean', 'chickpea', 'nut', 'peanut', 'almond', 'walnut', 'cashew', 'pistachio', 'seed', 'sunflower seed', 'pumpkin seed', 'chia seed', 'flax seed', 'honey', 'maple syrup', 'vanilla', 'baking powder', 'baking soda', 'spice', 'seasoning', 'sauce', 'condiment', 'ketchup', 'mustard', 'mayo', 'bbq sauce', 'soy sauce', 'worcestershire', 'hot sauce'],
-  'Frozen': ['frozen vegetable', 'frozen fruit', 'frozen meal', 'ice cream', 'frozen pizza', 'frozen chicken', 'frozen fish', 'frozen shrimp', 'frozen berry', 'frozen corn', 'frozen pea', 'frozen broccoli', 'frozen spinach', 'frozen potato', 'french fry', 'tater tot', 'frozen waffle', 'frozen bagel', 'frozen bread', 'frozen yogurt', 'sorbet', 'popsicle'],
-  'Beverages': ['water', 'juice', 'soda', 'coffee', 'tea', 'beer', 'wine', 'energy drink', 'sports drink', 'coconut water', 'sparkling water', 'kombucha', 'smoothie', 'protein shake', 'orange juice', 'apple juice', 'cranberry juice', 'grape juice', 'lemonade', 'iced tea'],
-  'Personal Care': ['shampoo', 'conditioner', 'soap', 'toothpaste', 'toothbrush', 'deodorant', 'lotion', 'sunscreen', 'razor', 'shaving cream', 'mouthwash', 'floss', 'tissue', 'toilet paper', 'feminine product', 'baby diaper', 'baby wipe', 'hand sanitizer', 'face wash', 'moisturizer'],
-  'Household': ['detergent', 'fabric softener', 'bleach', 'dish soap', 'sponge', 'paper towel', 'aluminum foil', 'plastic wrap', 'trash bag', 'cleaning spray', 'disinfectant', 'air freshener', 'candle', 'light bulb', 'battery', 'tape', 'glue', 'marker', 'pen', 'notebook'],
-  'Snacks': ['chip', 'cracker', 'cookie', 'candy', 'chocolate', 'gum', 'mint', 'granola bar', 'protein bar', 'trail mix', 'popcorn', 'pretzel', 'jerky', 'dried fruit', 'fruit snack', 'cheese stick', 'yogurt cup']
+// Grocery store categories organized by physical store layout
+const GROCERY_CATEGORIES = [
+  'Produce',
+  'Bakery',
+  'Dairy & Eggs',
+  'Meat & Seafood',
+  'Deli',
+  'Canned Goods',
+  'Pantry & Dry Goods',
+  'Frozen Foods',
+  'Beverages',
+  'Snacks',
+  'Personal Care',
+  'Household & Cleaning',
+  'Other'
+]
+
+const categorizeItemWithLLM = async (itemName: string): Promise<string> => {
+  try {
+    const prompt = spark.llmPrompt`You are categorizing a grocery item for a shopping list app. 
+
+Item to categorize: "${itemName}"
+
+Available categories (choose ONE that best fits):
+- Produce (fresh fruits, vegetables, herbs)
+- Bakery (bread, pastries, baked goods)
+- Dairy & Eggs (milk, cheese, yogurt, eggs, butter)
+- Meat & Seafood (fresh/raw meat, fish, poultry)
+- Deli (sliced meats, prepared foods, rotisserie chicken)
+- Canned Goods (canned soups, vegetables, beans, sauces)
+- Pantry & Dry Goods (rice, pasta, spices, condiments, boxed items)
+- Frozen Foods (frozen meals, ice cream, frozen vegetables)
+- Beverages (drinks, juices, coffee, tea)
+- Snacks (chips, crackers, candy, nuts)
+- Personal Care (shampoo, soap, toothpaste, hygiene items)
+- Household & Cleaning (detergent, paper towels, cleaning supplies)
+- Other (anything that doesn't fit the above)
+
+Consider the item's typical location in a grocery store and how it's packaged/sold.
+
+Examples:
+- "chicken noodle soup" → Canned Goods (because it's typically sold in cans)
+- "rotisserie chicken" → Deli (because it's prepared/cooked)
+- "raw chicken breast" → Meat & Seafood (because it's fresh/raw)
+- "frozen pizza" → Frozen Foods
+- "pizza dough" → Bakery or Dairy & Eggs (depending on where sold)
+
+Return ONLY the category name, no explanation.`
+
+    const category = await spark.llm(prompt, 'gpt-4o-mini')
+    
+    // Validate the response is one of our categories
+    if (GROCERY_CATEGORIES.includes(category.trim())) {
+      return category.trim()
+    }
+    
+    // Fallback to simple categorization if LLM returns invalid category
+    return categorizeItemSimple(itemName)
+  } catch (error) {
+    console.error('LLM categorization failed:', error)
+    // Fallback to simple categorization
+    return categorizeItemSimple(itemName)
+  }
 }
 
-const categorizeItem = (itemName: string): string => {
+// Simplified fallback categorization
+const categorizeItemSimple = (itemName: string): string => {
   const lowerName = itemName.toLowerCase()
   
-  for (const [category, items] of Object.entries(CATEGORIES)) {
-    if (items.some(item => lowerName.includes(item) || item.includes(lowerName))) {
-      return category
-    }
+  // Simple keyword matching for fallback
+  if (lowerName.includes('milk') || lowerName.includes('cheese') || lowerName.includes('yogurt') || lowerName.includes('egg') || lowerName.includes('butter')) {
+    return 'Dairy & Eggs'
+  }
+  if (lowerName.includes('chicken') || lowerName.includes('beef') || lowerName.includes('fish') || lowerName.includes('salmon') || lowerName.includes('meat')) {
+    return 'Meat & Seafood'
+  }
+  if (lowerName.includes('apple') || lowerName.includes('banana') || lowerName.includes('orange') || lowerName.includes('lettuce') || lowerName.includes('tomato')) {
+    return 'Produce'
+  }
+  if (lowerName.includes('bread') || lowerName.includes('bagel') || lowerName.includes('donut') || lowerName.includes('muffin')) {
+    return 'Bakery'
+  }
+  if (lowerName.includes('frozen')) {
+    return 'Frozen Foods'
+  }
+  if (lowerName.includes('canned') || lowerName.includes('soup') || lowerName.includes('sauce')) {
+    return 'Canned Goods'
+  }
+  if (lowerName.includes('shampoo') || lowerName.includes('soap') || lowerName.includes('toothpaste')) {
+    return 'Personal Care'
+  }
+  if (lowerName.includes('detergent') || lowerName.includes('cleaner') || lowerName.includes('paper towel')) {
+    return 'Household & Cleaning'
   }
   
   return 'Other'
@@ -48,23 +121,36 @@ function App() {
   const [newItemName, setNewItemName] = useState('')
   const [isPastItemsOpen, setIsPastItemsOpen] = useState(false)
   const [isCompletedOpen, setIsCompletedOpen] = useState(false)
+  const [isAddingItem, setIsAddingItem] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
   // Migrate existing items to include categories
   useEffect(() => {
-    const migrateItems = (items: GroceryItem[]) => {
-      return items.map(item => ({
-        ...item,
-        category: item.category || categorizeItem(item.name)
-      }))
+    const migrateItems = async (items: GroceryItem[]) => {
+      const updatedItems = []
+      for (const item of items) {
+        if (!item.category) {
+          const category = await categorizeItemWithLLM(item.name)
+          updatedItems.push({ ...item, category })
+        } else {
+          updatedItems.push(item)
+        }
+      }
+      return updatedItems
     }
 
-    if (currentList.some(item => !item.category)) {
-      setCurrentList(migrateItems(currentList))
+    const migrate = async () => {
+      if (currentList.some(item => !item.category)) {
+        const migrated = await migrateItems(currentList)
+        setCurrentList(migrated)
+      }
+      if (pastItems.some(item => !item.category)) {
+        const migrated = await migrateItems(pastItems)
+        setPastItems(migrated)
+      }
     }
-    if (pastItems.some(item => !item.category)) {
-      setPastItems(migrateItems(pastItems))
-    }
+
+    migrate()
   }, [currentList, pastItems, setCurrentList, setPastItems])
 
   // Focus input on mount
@@ -72,33 +158,42 @@ function App() {
     inputRef.current?.focus()
   }, [])
 
-  const addItem = () => {
-    if (!newItemName.trim()) return
+  const addItem = async () => {
+    if (!newItemName.trim() || isAddingItem) return
     
-    const trimmedName = newItemName.trim()
+    setIsAddingItem(true)
     
-    // Check if item already exists in current list
-    const existsInCurrent = currentList.some(item => 
-      item.name.toLowerCase() === trimmedName.toLowerCase()
-    )
-    
-    if (existsInCurrent) {
+    try {
+      const trimmedName = newItemName.trim()
+      
+      // Check if item already exists in current list
+      const existsInCurrent = currentList.some(item => 
+        item.name.toLowerCase() === trimmedName.toLowerCase()
+      )
+      
+      if (existsInCurrent) {
+        setNewItemName('')
+        inputRef.current?.focus()
+        return
+      }
+
+      // Use LLM to categorize the item
+      const category = await categorizeItemWithLLM(trimmedName)
+
+      const newItem: GroceryItem = {
+        id: Date.now().toString(),
+        name: trimmedName,
+        completed: false,
+        addedAt: Date.now(),
+        category
+      }
+
+      setCurrentList([...currentList, newItem])
       setNewItemName('')
       inputRef.current?.focus()
-      return
+    } finally {
+      setIsAddingItem(false)
     }
-
-    const newItem: GroceryItem = {
-      id: Date.now().toString(),
-      name: trimmedName,
-      completed: false,
-      addedAt: Date.now(),
-      category: categorizeItem(trimmedName)
-    }
-
-    setCurrentList([...currentList, newItem])
-    setNewItemName('')
-    inputRef.current?.focus()
   }
 
   const toggleItemComplete = (itemId: string) => {
@@ -114,7 +209,7 @@ function App() {
           )
           
           if (!existsInPast) {
-            setPastItems([...pastItems, { ...updatedItem, completed: false, category: categorizeItem(item.name) }])
+            setPastItems([...pastItems, { ...updatedItem, completed: false, category: item.category || 'Other' }])
           }
         }
         
@@ -130,7 +225,7 @@ function App() {
     setCurrentList(currentList.filter(item => item.id !== itemId))
   }
 
-  const addFromPastItems = (pastItem: GroceryItem) => {
+  const addFromPastItems = async (pastItem: GroceryItem) => {
     // Check if item already exists in current list
     const existsInCurrent = currentList.some(item => 
       item.name.toLowerCase() === pastItem.name.toLowerCase()
@@ -143,7 +238,7 @@ function App() {
       name: pastItem.name,
       completed: false,
       addedAt: Date.now(),
-      category: pastItem.category || categorizeItem(pastItem.name)
+      category: pastItem.category || await categorizeItemWithLLM(pastItem.name)
     }
 
     setCurrentList([...currentList, newItem])
@@ -153,9 +248,9 @@ function App() {
     setCurrentList(currentList.filter(item => !item.completed))
   }
 
-  const handleKeyPress = (e: React.KeyboardEvent) => {
+  const handleKeyPress = async (e: React.KeyboardEvent) => {
     if (e.key === 'Enter') {
-      addItem()
+      await addItem()
     }
   }
 
@@ -178,7 +273,7 @@ function App() {
   }, {})
 
   // Sort categories by a logical shopping order
-  const categoryOrder = ['Produce', 'Dairy & Eggs', 'Meat & Seafood', 'Pantry & Dry Goods', 'Frozen', 'Beverages', 'Personal Care', 'Household', 'Snacks', 'Other']
+  const categoryOrder = ['Produce', 'Bakery', 'Dairy & Eggs', 'Meat & Seafood', 'Deli', 'Canned Goods', 'Pantry & Dry Goods', 'Frozen Foods', 'Beverages', 'Snacks', 'Personal Care', 'Household & Cleaning', 'Other']
   const sortedCategories = categoryOrder.filter(category => groupedActiveItems[category]?.length > 0)
 
   return (
@@ -202,14 +297,19 @@ function App() {
               onKeyPress={handleKeyPress}
               placeholder="Add grocery item..."
               className="flex-1 text-base"
+              disabled={isAddingItem}
             />
             <Button 
               onClick={addItem}
-              disabled={!newItemName.trim()}
+              disabled={!newItemName.trim() || isAddingItem}
               size="default"
               className="px-3"
             >
-              <Plus size={20} />
+              {isAddingItem ? (
+                <div className="w-5 h-5 border-2 border-primary-foreground/30 border-t-primary-foreground rounded-full animate-spin" />
+              ) : (
+                <Plus size={20} />
+              )}
             </Button>
           </div>
         </Card>
