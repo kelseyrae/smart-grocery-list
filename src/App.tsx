@@ -404,7 +404,9 @@ function App() {
                     </div>
                     
                     <CollapsibleContent className="space-y-1 mt-2">
-                      {completedItems.map((item) => (
+                      {completedItems
+                        .sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()))
+                        .map((item) => (
                         <div key={item.id} className="flex items-center gap-3 p-2 rounded-lg bg-muted/30">
                           <Checkbox
                             checked={item.completed}
@@ -446,7 +448,9 @@ function App() {
                 <p className="text-sm text-muted-foreground mb-3">
                   Tap any item to add it back to your list
                 </p>
-                {availablePastItems.map((item) => (
+                {availablePastItems
+                  .sort((a, b) => a.name.toLowerCase().localeCompare(b.name.toLowerCase()))
+                  .map((item) => (
                   <button
                     key={item.id}
                     onClick={() => addFromPastItems(item)}
