@@ -45,6 +45,7 @@ function App() {
   const [pastItems, setPastItems] = useKV<GroceryItem[]>('grocery-past-items', [])
   const [newItemName, setNewItemName] = useState('')
   const [isPastItemsOpen, setIsPastItemsOpen] = useState(false)
+  const [isCompletedOpen, setIsCompletedOpen] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
 
   // Migrate existing items to include categories
@@ -218,19 +219,7 @@ function App() {
         {currentList.length > 0 && (
           <Card className="p-4">
             <div className="space-y-4">
-              <div className="flex items-center justify-between">
-                <h2 className="font-medium text-foreground">Shopping List</h2>
-                {completedItems.length > 0 && (
-                  <Button 
-                    variant="ghost" 
-                    size="sm"
-                    onClick={clearCompletedItems}
-                    className="text-muted-foreground hover:text-foreground"
-                  >
-                    Clear completed
-                  </Button>
-                )}
-              </div>
+              <h2 className="font-medium text-foreground">Shopping List</h2>
               
               {/* Active Items by Category */}
               {sortedCategories.map((category) => (
@@ -271,29 +260,45 @@ function App() {
               {/* Completed Items */}
               {completedItems.length > 0 && (
                 <div className="space-y-2 mt-6">
-                  <div className="flex items-center gap-2">
-                    <Check className="text-primary" size={16} />
-                    <h3 className="font-medium text-sm text-primary uppercase tracking-wide">
-                      Completed
-                    </h3>
+                  <Collapsible open={isCompletedOpen} onOpenChange={setIsCompletedOpen}>
+                    <div className="flex items-center justify-between">
+                      <CollapsibleTrigger asChild>
+                        <Button 
+                          variant="ghost" 
+                          className="flex items-center gap-2 p-0 h-auto font-medium text-primary uppercase tracking-wide hover:bg-transparent"
+                        >
+                          <Check size={16} />
+                          <span className="text-sm">Completed ({completedItems.length})</span>
+                          {isCompletedOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                        </Button>
+                      </CollapsibleTrigger>
+                      <Button 
+                        variant="ghost" 
+                        size="sm"
+                        onClick={clearCompletedItems}
+                        className="text-muted-foreground hover:text-foreground"
+                      >
+                        Clear completed
+                      </Button>
+                    </div>
                     <div className="flex-1 h-px bg-border"></div>
-                  </div>
-                  
-                  <div className="space-y-1">
-                    {completedItems.map((item) => (
-                      <div key={item.id} className="flex items-center gap-3 p-2 rounded-lg bg-muted/30">
-                        <Checkbox
-                          checked={item.completed}
-                          onCheckedChange={() => toggleItemComplete(item.id)}
-                          className="flex-shrink-0"
-                        />
-                        <span className="flex-1 text-muted-foreground line-through">
-                          {item.name}
-                        </span>
-                        <Check className="text-primary" size={16} />
-                      </div>
-                    ))}
-                  </div>
+                    
+                    <CollapsibleContent className="space-y-1 mt-2">
+                      {completedItems.map((item) => (
+                        <div key={item.id} className="flex items-center gap-3 p-2 rounded-lg bg-muted/30">
+                          <Checkbox
+                            checked={item.completed}
+                            onCheckedChange={() => toggleItemComplete(item.id)}
+                            className="flex-shrink-0"
+                          />
+                          <span className="flex-1 text-muted-foreground line-through">
+                            {item.name}
+                          </span>
+                          <Check className="text-primary" size={16} />
+                        </div>
+                      ))}
+                    </CollapsibleContent>
+                  </Collapsible>
                 </div>
               )}
             </div>
