@@ -276,8 +276,9 @@ function App() {
                         variant="ghost" 
                         size="sm"
                         onClick={clearCompletedItems}
-                        className="text-muted-foreground hover:text-foreground"
+                        className="text-muted-foreground hover:text-foreground flex items-center gap-1"
                       >
+                        <Trash2 size={14} />
                         Clear completed
                       </Button>
                     </div>
