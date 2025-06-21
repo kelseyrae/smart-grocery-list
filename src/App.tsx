@@ -5,8 +5,9 @@ import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Plus, Check, ChevronDown, ChevronRight, ShoppingCart, Package } from "@phosphor-icons/react"
+import { Plus, Check, ShoppingCart, Package } from "@phosphor-icons/react"
 import deleteIcon from "./assets/delete.png"
+import downIcon from "./assets/down.png"
 
 interface GroceryItem {
   id: string
@@ -267,7 +268,11 @@ function App() {
                         >
                           <Check size={16} />
                           <span className="text-sm">Completed ({completedItems.length})</span>
-                          {isCompletedOpen ? <ChevronDown size={16} /> : <ChevronRight size={16} />}
+                          <img 
+                            src={downIcon} 
+                            alt="Expand" 
+                            className={`w-4 h-4 transition-transform duration-200 ${isCompletedOpen ? 'rotate-0' : '-rotate-90'}`} 
+                          />
                         </Button>
                       </CollapsibleTrigger>
                       <Button 
@@ -313,7 +318,11 @@ function App() {
                   className="w-full justify-between p-0 h-auto font-medium text-foreground hover:bg-transparent"
                 >
                   <span>Past Items ({availablePastItems.length})</span>
-                  {isPastItemsOpen ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
+                  <img 
+                    src={downIcon} 
+                    alt="Expand" 
+                    className={`w-5 h-5 transition-transform duration-200 ${isPastItemsOpen ? 'rotate-0' : '-rotate-90'}`} 
+                  />
                 </Button>
               </CollapsibleTrigger>
               <CollapsibleContent className="space-y-3 mt-3">
