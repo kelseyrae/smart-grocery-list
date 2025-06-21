@@ -297,8 +297,8 @@ function App() {
     <div className="min-h-screen bg-background font-sans">
       <div className="max-w-md mx-auto p-4 space-y-6">
         {/* Header */}
-        <div className="text-center py-4">
-          <div className="flex items-center justify-center gap-2 mb-2">
+        <div className="text-center py-2">
+          <div className="flex items-center justify-center gap-2">
             <ShoppingCart className="text-primary" size={28} />
             <h1 className="text-2xl font-semibold text-foreground">Grocery List</h1>
           </div>
