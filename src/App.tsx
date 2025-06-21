@@ -189,9 +189,6 @@ function App() {
             <ShoppingCart className="text-primary" size={28} />
             <h1 className="text-2xl font-semibold text-foreground">Grocery List</h1>
           </div>
-          <p className="text-muted-foreground text-sm">
-            {activeItems.length} item{activeItems.length !== 1 ? 's' : ''} to buy
-          </p>
         </div>
 
         {/* Add Item Input */}
