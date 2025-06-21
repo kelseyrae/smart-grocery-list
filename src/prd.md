@@ -40,6 +40,11 @@
 - **Why it matters**: Keeps the app organized without manual maintenance
 - **Success criteria**: No duplicate items in active list, seamless item lifecycle
 
+### Automatic Categorization
+- **What it does**: Intelligently sorts grocery items into categories like Produce, Dairy, Meat, etc.
+- **Why it matters**: Makes shopping more efficient by organizing items by store layout
+- **Success criteria**: Items are correctly categorized and grouped visually in the list
+
 ## Design Direction
 
 ### Visual Tone & Identity

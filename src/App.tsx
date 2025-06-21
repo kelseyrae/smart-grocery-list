@@ -5,13 +5,39 @@ import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
 import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible"
 import { Checkbox } from "@/components/ui/checkbox"
-import { Plus, Check, Trash2, ChevronDown, ChevronRight, ShoppingCart } from "@phosphor-icons/react"
+import { Plus, Check, Trash2, ChevronDown, ChevronRight, ShoppingCart, Package } from "@phosphor-icons/react"
 
 interface GroceryItem {
   id: string
   name: string
   completed: boolean
   addedAt: number
+  category: string
+}
+
+// Grocery item categories with common items
+const CATEGORIES = {
+  'Produce': ['apple', 'banana', 'orange', 'lemon', 'lime', 'grape', 'strawberry', 'blueberry', 'raspberry', 'blackberry', 'peach', 'pear', 'plum', 'cherry', 'mango', 'pineapple', 'watermelon', 'cantaloupe', 'honeydew', 'avocado', 'tomato', 'cucumber', 'lettuce', 'spinach', 'kale', 'arugula', 'cabbage', 'broccoli', 'cauliflower', 'carrot', 'celery', 'onion', 'garlic', 'potato', 'sweet potato', 'bell pepper', 'jalapeño', 'mushroom', 'zucchini', 'squash', 'eggplant', 'asparagus', 'green bean', 'pea', 'corn', 'radish', 'turnip', 'beet', 'parsnip', 'leek', 'scallion', 'chive', 'herb', 'basil', 'cilantro', 'parsley', 'mint', 'rosemary', 'thyme'],
+  'Dairy & Eggs': ['milk', 'cheese', 'butter', 'yogurt', 'egg', 'cream', 'sour cream', 'cottage cheese', 'cream cheese', 'mozzarella', 'cheddar', 'parmesan', 'swiss', 'feta', 'goat cheese', 'ricotta', 'brie', 'camembert', 'blue cheese', 'half and half', 'heavy cream', 'whipped cream', 'condensed milk', 'evaporated milk', 'almond milk', 'soy milk', 'oat milk', 'coconut milk'],
+  'Meat & Seafood': ['chicken', 'beef', 'pork', 'turkey', 'lamb', 'fish', 'salmon', 'tuna', 'cod', 'tilapia', 'shrimp', 'crab', 'lobster', 'scallop', 'mussel', 'clam', 'oyster', 'ground beef', 'ground turkey', 'ground chicken', 'steak', 'roast', 'chop', 'bacon', 'sausage', 'ham', 'deli meat', 'hot dog', 'bratwurst'],
+  'Pantry & Dry Goods': ['rice', 'pasta', 'bread', 'flour', 'sugar', 'salt', 'pepper', 'oil', 'vinegar', 'cereal', 'oats', 'quinoa', 'lentil', 'bean', 'chickpea', 'nut', 'peanut', 'almond', 'walnut', 'cashew', 'pistachio', 'seed', 'sunflower seed', 'pumpkin seed', 'chia seed', 'flax seed', 'honey', 'maple syrup', 'vanilla', 'baking powder', 'baking soda', 'spice', 'seasoning', 'sauce', 'condiment', 'ketchup', 'mustard', 'mayo', 'bbq sauce', 'soy sauce', 'worcestershire', 'hot sauce'],
+  'Frozen': ['frozen vegetable', 'frozen fruit', 'frozen meal', 'ice cream', 'frozen pizza', 'frozen chicken', 'frozen fish', 'frozen shrimp', 'frozen berry', 'frozen corn', 'frozen pea', 'frozen broccoli', 'frozen spinach', 'frozen potato', 'french fry', 'tater tot', 'frozen waffle', 'frozen bagel', 'frozen bread', 'frozen yogurt', 'sorbet', 'popsicle'],
+  'Beverages': ['water', 'juice', 'soda', 'coffee', 'tea', 'beer', 'wine', 'energy drink', 'sports drink', 'coconut water', 'sparkling water', 'kombucha', 'smoothie', 'protein shake', 'orange juice', 'apple juice', 'cranberry juice', 'grape juice', 'lemonade', 'iced tea'],
+  'Personal Care': ['shampoo', 'conditioner', 'soap', 'toothpaste', 'toothbrush', 'deodorant', 'lotion', 'sunscreen', 'razor', 'shaving cream', 'mouthwash', 'floss', 'tissue', 'toilet paper', 'feminine product', 'baby diaper', 'baby wipe', 'hand sanitizer', 'face wash', 'moisturizer'],
+  'Household': ['detergent', 'fabric softener', 'bleach', 'dish soap', 'sponge', 'paper towel', 'aluminum foil', 'plastic wrap', 'trash bag', 'cleaning spray', 'disinfectant', 'air freshener', 'candle', 'light bulb', 'battery', 'tape', 'glue', 'marker', 'pen', 'notebook'],
+  'Snacks': ['chip', 'cracker', 'cookie', 'candy', 'chocolate', 'gum', 'mint', 'granola bar', 'protein bar', 'trail mix', 'popcorn', 'pretzel', 'jerky', 'dried fruit', 'fruit snack', 'cheese stick', 'yogurt cup']
+}
+
+const categorizeItem = (itemName: string): string => {
+  const lowerName = itemName.toLowerCase()
+  
+  for (const [category, items] of Object.entries(CATEGORIES)) {
+    if (items.some(item => lowerName.includes(item) || item.includes(lowerName))) {
+      return category
+    }
+  }
+  
+  return 'Other'
 }
 
 function App() {
@@ -20,6 +46,23 @@ function App() {
   const [newItemName, setNewItemName] = useState('')
   const [isPastItemsOpen, setIsPastItemsOpen] = useState(false)
   const inputRef = useRef<HTMLInputElement>(null)
+
+  // Migrate existing items to include categories
+  useEffect(() => {
+    const migrateItems = (items: GroceryItem[]) => {
+      return items.map(item => ({
+        ...item,
+        category: item.category || categorizeItem(item.name)
+      }))
+    }
+
+    if (currentList.some(item => !item.category)) {
+      setCurrentList(migrateItems(currentList))
+    }
+    if (pastItems.some(item => !item.category)) {
+      setPastItems(migrateItems(pastItems))
+    }
+  }, [currentList, pastItems, setCurrentList, setPastItems])
 
   // Focus input on mount
   useEffect(() => {
@@ -46,7 +89,8 @@ function App() {
       id: Date.now().toString(),
       name: trimmedName,
       completed: false,
-      addedAt: Date.now()
+      addedAt: Date.now(),
+      category: categorizeItem(trimmedName)
     }
 
     setCurrentList([...currentList, newItem])
@@ -67,7 +111,7 @@ function App() {
           )
           
           if (!existsInPast) {
-            setPastItems([...pastItems, { ...updatedItem, completed: false }])
+            setPastItems([...pastItems, { ...updatedItem, completed: false, category: categorizeItem(item.name) }])
           }
         }
         
@@ -95,7 +139,8 @@ function App() {
       id: Date.now().toString(),
       name: pastItem.name,
       completed: false,
-      addedAt: Date.now()
+      addedAt: Date.now(),
+      category: pastItem.category || categorizeItem(pastItem.name)
     }
 
     setCurrentList([...currentList, newItem])
@@ -118,6 +163,20 @@ function App() {
       currentItem.name.toLowerCase() === pastItem.name.toLowerCase()
     )
   )
+
+  // Group active items by category
+  const groupedActiveItems = activeItems.reduce((groups: Record<string, GroceryItem[]>, item) => {
+    const category = item.category || 'Other'
+    if (!groups[category]) {
+      groups[category] = []
+    }
+    groups[category].push(item)
+    return groups
+  }, {})
+
+  // Sort categories by a logical shopping order
+  const categoryOrder = ['Produce', 'Dairy & Eggs', 'Meat & Seafood', 'Pantry & Dry Goods', 'Frozen', 'Beverages', 'Personal Care', 'Household', 'Snacks', 'Other']
+  const sortedCategories = categoryOrder.filter(category => groupedActiveItems[category]?.length > 0)
 
   return (
     <div className="min-h-screen bg-background font-sans">
@@ -158,7 +217,7 @@ function App() {
         {/* Current Shopping List */}
         {currentList.length > 0 && (
           <Card className="p-4">
-            <div className="space-y-3">
+            <div className="space-y-4">
               <div className="flex items-center justify-between">
                 <h2 className="font-medium text-foreground">Shopping List</h2>
                 {completedItems.length > 0 && (
@@ -173,44 +232,70 @@ function App() {
                 )}
               </div>
               
-              <div className="space-y-2">
-                {/* Active Items */}
-                {activeItems.map((item) => (
-                  <div key={item.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
-                    <Checkbox
-                      checked={item.completed}
-                      onCheckedChange={() => toggleItemComplete(item.id)}
-                      className="flex-shrink-0"
-                    />
-                    <span className="flex-1 text-foreground font-medium">
-                      {item.name}
-                    </span>
-                    <Button
-                      variant="ghost"
-                      size="sm"
-                      onClick={() => removeItem(item.id)}
-                      className="text-muted-foreground hover:text-destructive p-1"
-                    >
-                      <Trash2 size={16} />
-                    </Button>
+              {/* Active Items by Category */}
+              {sortedCategories.map((category) => (
+                <div key={category} className="space-y-2">
+                  <div className="flex items-center gap-2 mt-4 first:mt-0">
+                    <Package className="text-primary" size={16} />
+                    <h3 className="font-medium text-sm text-primary uppercase tracking-wide">
+                      {category}
+                    </h3>
+                    <div className="flex-1 h-px bg-border"></div>
                   </div>
-                ))}
+                  
+                  <div className="space-y-1">
+                    {groupedActiveItems[category].map((item) => (
+                      <div key={item.id} className="flex items-center gap-3 p-2 rounded-lg hover:bg-muted/50 transition-colors">
+                        <Checkbox
+                          checked={item.completed}
+                          onCheckedChange={() => toggleItemComplete(item.id)}
+                          className="flex-shrink-0"
+                        />
+                        <span className="flex-1 text-foreground font-medium">
+                          {item.name}
+                        </span>
+                        <Button
+                          variant="ghost"
+                          size="sm"
+                          onClick={() => removeItem(item.id)}
+                          className="text-muted-foreground hover:text-destructive p-1"
+                        >
+                          <Trash2 size={16} />
+                        </Button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ))}
 
-                {/* Completed Items */}
-                {completedItems.map((item) => (
-                  <div key={item.id} className="flex items-center gap-3 p-2 rounded-lg bg-muted/30">
-                    <Checkbox
-                      checked={item.completed}
-                      onCheckedChange={() => toggleItemComplete(item.id)}
-                      className="flex-shrink-0"
-                    />
-                    <span className="flex-1 text-muted-foreground line-through">
-                      {item.name}
-                    </span>
+              {/* Completed Items */}
+              {completedItems.length > 0 && (
+                <div className="space-y-2 mt-6">
+                  <div className="flex items-center gap-2">
                     <Check className="text-primary" size={16} />
+                    <h3 className="font-medium text-sm text-primary uppercase tracking-wide">
+                      Completed
+                    </h3>
+                    <div className="flex-1 h-px bg-border"></div>
                   </div>
-                ))}
-              </div>
+                  
+                  <div className="space-y-1">
+                    {completedItems.map((item) => (
+                      <div key={item.id} className="flex items-center gap-3 p-2 rounded-lg bg-muted/30">
+                        <Checkbox
+                          checked={item.completed}
+                          onCheckedChange={() => toggleItemComplete(item.id)}
+                          className="flex-shrink-0"
+                        />
+                        <span className="flex-1 text-muted-foreground line-through">
+                          {item.name}
+                        </span>
+                        <Check className="text-primary" size={16} />
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
             </div>
           </Card>
         )}
@@ -228,7 +313,7 @@ function App() {
                   {isPastItemsOpen ? <ChevronDown size={20} /> : <ChevronRight size={20} />}
                 </Button>
               </CollapsibleTrigger>
-              <CollapsibleContent className="space-y-2 mt-3">
+              <CollapsibleContent className="space-y-3 mt-3">
                 <p className="text-sm text-muted-foreground mb-3">
                   Tap any item to add it back to your list
                 </p>
@@ -239,10 +324,15 @@ function App() {
                     className="w-full text-left p-3 rounded-lg border border-border hover:bg-accent hover:border-primary/30 transition-all duration-200 group"
                   >
                     <div className="flex items-center justify-between">
-                      <span className="text-foreground font-medium group-hover:text-accent-foreground">
-                        {item.name}
-                      </span>
-                      <Plus className="text-muted-foreground group-hover:text-primary transition-colors" size={16} />
+                      <div className="flex-1">
+                        <span className="text-foreground font-medium group-hover:text-accent-foreground block">
+                          {item.name}
+                        </span>
+                        <span className="text-xs text-muted-foreground group-hover:text-accent-foreground/70">
+                          {item.category || 'Other'}
+                        </span>
+                      </div>
+                      <Plus className="text-muted-foreground group-hover:text-primary transition-colors flex-shrink-0 ml-2" size={16} />
                     </div>
                   </button>
                 ))}
