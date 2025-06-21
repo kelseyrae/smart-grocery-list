@@ -283,7 +283,6 @@ function App() {
                         Clear completed
                       </Button>
                     </div>
-                    <div className="flex-1 h-px bg-border"></div>
                     
                     <CollapsibleContent className="space-y-1 mt-2">
                       {completedItems.map((item) => (
