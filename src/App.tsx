@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react'
-import { useKV } from '@github/spark/hooks'
+import { useLocalStorage } from './hooks/useLocalStorage'
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card } from "@/components/ui/card"
@@ -52,80 +52,91 @@ const getCategoryIcon = (category: string) => {
 }
 
 const categorizeItemWithLLM = async (itemName: string): Promise<string> => {
-  try {
-    const prompt = spark.llmPrompt`You are categorizing a grocery item for a shopping list app. 
-
-Item to categorize: "${itemName}"
-
-Available categories (choose ONE that best fits):
-- Produce (fresh fruits, vegetables, herbs, onions)
-- Bakery (bread, pastries, baked goods)
-- Dairy & Eggs (milk, cheese, yogurt, eggs, butter)
-- Meat & Seafood (fresh/raw meat, fish, poultry)
-- Deli (sliced meats, prepared foods, rotisserie chicken)
-- Canned Goods (canned soups, vegetables, beans, sauces)
-- Pantry & Dry Goods (rice, pasta, spices, condiments, boxed items)
-- Frozen Foods (frozen meals, ice cream, frozen vegetables)
-- Beverages (drinks, juices, coffee, tea)
-- Snacks (chips, crackers, candy, nuts)
-- Personal Care (shampoo, soap, toothpaste, hygiene items)
-- Household & Cleaning (detergent, paper towels, cleaning supplies)
-- Other (anything that doesn't fit the above)
-
-Consider the item's typical location in a grocery store and how it's packaged/sold.
-
-Examples:
-- "chicken noodle soup" → Canned Goods (because it's typically sold in cans)
-- "rotisserie chicken" → Deli (because it's prepared/cooked)
-- "raw chicken breast" → Meat & Seafood (because it's fresh/raw)
-- "frozen pizza" → Frozen Foods
-- "pizza dough" → Bakery or Dairy & Eggs (depending on where sold)
-
-Return ONLY the category name, no explanation.`
-
-    const category = await spark.llm(prompt, 'gpt-4o-mini')
-    
-    // Validate the response is one of our categories
-    if (GROCERY_CATEGORIES.includes(category.trim())) {
-      return category.trim()
-    }
-    
-    // Fallback to simple categorization if LLM returns invalid category
-    return categorizeItemSimple(itemName)
-  } catch (error) {
-    console.error('LLM categorization failed:', error)
-    // Fallback to simple categorization
-    return categorizeItemSimple(itemName)
-  }
+  // Use simple categorization since LLM is no longer available
+  return categorizeItemSimple(itemName)
 }
 
-// Simplified fallback categorization
+// Enhanced simple categorization with more keywords
 const categorizeItemSimple = (itemName: string): string => {
   const lowerName = itemName.toLowerCase()
   
-  // Simple keyword matching for fallback
-  if (lowerName.includes('milk') || lowerName.includes('cheese') || lowerName.includes('yogurt') || lowerName.includes('egg') || lowerName.includes('butter')) {
-    return 'Dairy & Eggs'
-  }
-  if (lowerName.includes('chicken') || lowerName.includes('beef') || lowerName.includes('fish') || lowerName.includes('salmon') || lowerName.includes('meat')) {
-    return 'Meat & Seafood'
-  }
-  if (lowerName.includes('apple') || lowerName.includes('banana') || lowerName.includes('orange') || lowerName.includes('lettuce') || lowerName.includes('tomato')) {
+  // Produce
+  if (lowerName.includes('apple') || lowerName.includes('banana') || lowerName.includes('orange') || 
+      lowerName.includes('lettuce') || lowerName.includes('tomato') || lowerName.includes('onion') ||
+      lowerName.includes('carrot') || lowerName.includes('celery') || lowerName.includes('spinach') ||
+      lowerName.includes('potato') || lowerName.includes('pepper') || lowerName.includes('cucumber') ||
+      lowerName.includes('avocado') || lowerName.includes('lime') || lowerName.includes('lemon') ||
+      lowerName.includes('berry') || lowerName.includes('grapes') || lowerName.includes('melon')) {
     return 'Produce'
   }
-  if (lowerName.includes('bread') || lowerName.includes('bagel') || lowerName.includes('donut') || lowerName.includes('muffin')) {
+  
+  // Dairy & Eggs
+  if (lowerName.includes('milk') || lowerName.includes('cheese') || lowerName.includes('yogurt') || 
+      lowerName.includes('egg') || lowerName.includes('butter') || lowerName.includes('cream') ||
+      lowerName.includes('cottage cheese') || lowerName.includes('sour cream')) {
+    return 'Dairy & Eggs'
+  }
+  
+  // Meat & Seafood
+  if (lowerName.includes('chicken') || lowerName.includes('beef') || lowerName.includes('fish') || 
+      lowerName.includes('salmon') || lowerName.includes('meat') || lowerName.includes('pork') ||
+      lowerName.includes('turkey') || lowerName.includes('shrimp') || lowerName.includes('tuna') ||
+      lowerName.includes('ground') || lowerName.includes('steak')) {
+    return 'Meat & Seafood'
+  }
+  
+  // Bakery
+  if (lowerName.includes('bread') || lowerName.includes('bagel') || lowerName.includes('donut') || 
+      lowerName.includes('muffin') || lowerName.includes('croissant') || lowerName.includes('roll') ||
+      lowerName.includes('baguette')) {
     return 'Bakery'
   }
-  if (lowerName.includes('frozen')) {
+  
+  // Frozen Foods
+  if (lowerName.includes('frozen') || lowerName.includes('ice cream') || lowerName.includes('pizza') ||
+      lowerName.includes('popsicle')) {
     return 'Frozen Foods'
   }
-  if (lowerName.includes('canned') || lowerName.includes('soup') || lowerName.includes('sauce')) {
+  
+  // Canned Goods
+  if (lowerName.includes('canned') || lowerName.includes('soup') || lowerName.includes('sauce') ||
+      lowerName.includes('beans') || lowerName.includes('corn') || lowerName.includes('peas') ||
+      lowerName.includes('tomato sauce') || lowerName.includes('diced tomatoes')) {
     return 'Canned Goods'
   }
-  if (lowerName.includes('shampoo') || lowerName.includes('soap') || lowerName.includes('toothpaste')) {
+  
+  // Pantry & Dry Goods
+  if (lowerName.includes('rice') || lowerName.includes('pasta') || lowerName.includes('cereal') ||
+      lowerName.includes('flour') || lowerName.includes('sugar') || lowerName.includes('salt') ||
+      lowerName.includes('pepper') || lowerName.includes('oil') || lowerName.includes('vinegar') ||
+      lowerName.includes('spice') || lowerName.includes('seasoning')) {
+    return 'Pantry & Dry Goods'
+  }
+  
+  // Beverages
+  if (lowerName.includes('juice') || lowerName.includes('soda') || lowerName.includes('water') ||
+      lowerName.includes('coffee') || lowerName.includes('tea') || lowerName.includes('beer') ||
+      lowerName.includes('wine') || lowerName.includes('drink')) {
+    return 'Beverages'
+  }
+  
+  // Snacks
+  if (lowerName.includes('chips') || lowerName.includes('crackers') || lowerName.includes('candy') ||
+      lowerName.includes('nuts') || lowerName.includes('cookies') || lowerName.includes('popcorn')) {
+    return 'Snacks'
+  }
+  
+  // Personal Care
+  if (lowerName.includes('shampoo') || lowerName.includes('soap') || lowerName.includes('toothpaste') ||
+      lowerName.includes('deodorant') || lowerName.includes('lotion') || lowerName.includes('razor') ||
+      lowerName.includes('toothbrush')) {
     return 'Personal Care'
   }
-  if (lowerName.includes('detergent') || lowerName.includes('cleaner') || lowerName.includes('paper towel')) {
+  
+  // Household & Cleaning
+  if (lowerName.includes('detergent') || lowerName.includes('cleaner') || lowerName.includes('paper towel') ||
+      lowerName.includes('toilet paper') || lowerName.includes('dish soap') || lowerName.includes('sponge') ||
+      lowerName.includes('trash bags')) {
     return 'Household & Cleaning'
   }
   
@@ -133,8 +144,8 @@ const categorizeItemSimple = (itemName: string): string => {
 }
 
 function App() {
-  const [currentList, setCurrentList] = useKV<GroceryItem[]>('grocery-current-list', [])
-  const [pastItems, setPastItems] = useKV<GroceryItem[]>('grocery-past-items', [])
+  const [currentList, setCurrentList] = useLocalStorage<GroceryItem[]>('grocery-current-list', [])
+  const [pastItems, setPastItems] = useLocalStorage<GroceryItem[]>('grocery-past-items', [])
   const [newItemName, setNewItemName] = useState('')
   const [isPastItemsOpen, setIsPastItemsOpen] = useState(false)
   const [isCompletedOpen, setIsCompletedOpen] = useState(false)
